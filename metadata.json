@@ -1,0 +1,7 @@
+{
+  "name": "CampusCash",
+  "description": "University student finance dashboard with income/expense tracking, interactive category pie chart, group split calculator, and CSV export.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
