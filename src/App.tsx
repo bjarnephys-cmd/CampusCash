@@ -30,7 +30,7 @@ export default function App() {
     try {
       setIsLoading(true);
       setApiError(null);
-      const data = await fetchTransactions();
+      const data = await fetchTransactions(); //henter data fra db
       setTransactions(data);
     } catch (err: any) {
       console.warn('API error, using initial dataset:', err);
@@ -53,13 +53,31 @@ export default function App() {
     try {
       if (txData.id) {
         // Update in backend
-        const updated = await updateTransaction(txData.id, txData);
+        const response = await updateTransaction(txData.id, txData);  //{transaction,debug} obj 
+        console.log('Svar fra backend:', response);
+
+        // Træk selve transaktionen ud (hvis den ligger i et .transaction felt)
+        const updated = response.transaction || response;
+    
         setTransactions((prev) => prev.map((t) => (t.id === txData.id ? updated : t)));
       } else {
+     
+      
         // Create in backend
-        const created = await createTransaction(txData);
+        const response = await createTransaction(txData);  //{transaction,debug} obj 
+        console.log('Svar fra backend:', response);
+
+        // Træk selve transaktionen ud (hvis den ligger i et .transaction felt)
+        const created = response.transaction || response;
+
+        //const newData = ((prev) => [created, ...prev]);
         setTransactions((prev) => [created, ...prev]);
+        
+      
+
       }
+
+     
     } catch (err: any) {
       console.error('Error saving transaction to backend:', err);
       // Fallback local update

@@ -227,13 +227,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             {recentTransactions.length === 0 ? (
               <p className="text-xs text-slate-400 py-6 text-center">Ingen posteringer endnu.</p>
             ) : (
-              recentTransactions.map((tx) => {
+              recentTransactions.map((tx, index) => {
                 const isIncome = tx.type === 'income';
                 const catColor = CATEGORY_COLORS[tx.category];
 
                 return (
                   <div
-                    key={tx.id}
+                    key={tx.id ? `${tx.id}-${index}` : index} // før key=t.id
                     onClick={() => onNavigateToTransactions()}
                     className="py-3 flex items-center justify-between hover:bg-slate-50/70 -mx-2 px-2 rounded-lg transition-colors cursor-pointer"
                   >

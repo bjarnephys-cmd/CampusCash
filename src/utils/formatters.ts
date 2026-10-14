@@ -46,9 +46,10 @@ export function generateCSV(transactions: Transaction[]): string {
   ];
 
   const rows = transactions.map((t) => {
-    const yourShare = t.is_shared && t.split_between_count && t.split_between_count > 0
-      ? (t.amount / t.split_between_count).toFixed(2)
-      : t.amount.toFixed(2);
+    const amount = Number(t.amount) || 0;
+    const splitCount = Number(t.split_between_count) || 1;
+    const rawShare = t.is_shared && splitCount > 0 ? amount / splitCount : amount;
+    const yourShare = Number(rawShare).toFixed(2);
 
     return [
       `"${t.id}"`,

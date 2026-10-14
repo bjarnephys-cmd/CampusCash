@@ -39,10 +39,12 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({
   const filteredTransactions = useMemo(() => {
     return transactions.filter((tx) => {
       // Search
+      const query = (searchQuery ?? '').toLowerCase();
       const matchesSearch = 
-        tx.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        tx.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (tx.notes && tx.notes.toLowerCase().includes(searchQuery.toLowerCase()));
+      (tx.title ?? '').toLowerCase().includes(query) ||
+      (tx.category ?? '').toLowerCase().includes(query) ||
+      (tx.notes ?? '').toLowerCase().includes(query);
+      
 
       if (!matchesSearch) return false;
 
@@ -196,11 +198,13 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({
               className="px-2.5 py-1 text-xs border border-slate-200 rounded-lg bg-white text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-emerald-600"
             >
               <option value="all">Alle kategorier</option>
-              {availableCategories.map((c) => (
-                <option key={c} value={c}>
+           
+              {availableCategories.map((c, index) => (
+                <option key={`${c}-${index}`} value={c}>
                   {c}
                 </option>
               ))}
+
             </select>
 
             <div className="flex items-center gap-1.5 text-slate-500 ml-2">
@@ -276,13 +280,18 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-xs sm:text-sm">
-                {filteredTransactions.map((tx) => {
+                {filteredTransactions.map((tx, index) => {
+                  const amount = Number(tx.amount) || 0;
+                  const splitCount = Number(tx.split_between_count) || 1;
+                  const yourShare = tx.is_shared && splitCount > 0 ? amount / splitCount : amount;
+                  
                   const isIncome = tx.type === 'income';
                   const catColor = CATEGORY_COLORS[tx.category];
-                  const yourShare = tx.is_shared && tx.split_between_count ? tx.amount / tx.split_between_count : tx.amount;
-
+                 
+                  
                   return (
-                    <tr key={tx.id} className="hover:bg-slate-50/60 transition-colors">
+                    <tr key={tx.id ? `${tx.id}-${index}` : index} className="hover:bg-slate-50/60 transition-colors">
+                   
                       {/* Date */}
                       <td className="py-3 px-4 text-slate-600 font-mono text-xs whitespace-nowrap">
                         {formatDate(tx.date)}

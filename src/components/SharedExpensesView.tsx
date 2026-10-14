@@ -45,10 +45,17 @@ export const SharedExpensesView: React.FC<SharedExpensesViewProps> = ({
   const settledAmount = sharedTxList
     .filter((t) => t.settled)
     .reduce((sum, t) => {
+      const amount = Number(t.amount) || 0;
       const count = t.split_between_count && t.split_between_count > 0 ? t.split_between_count : 1;
-      return sum + (t.amount - (t.amount / count));
+      return sum + (amount - (amount / count));
     }, 0);
   const pendingOwedAmount = totalOwedByOthers - settledAmount;
+/*
+  // Rigtig: Tvinger altid beløbet til at være et rigtigt tal under summeringen
+const total = transactions.reduce((sum, tx) => {
+    const amount = Number(tx.amount) || 0;
+    return sum + amount;
+}, 0);  */
 
   // --- Group Split Calculator State ---
   const [calcTitle, setCalcTitle] = useState('Fællesaftensmad i kollegiet');
@@ -380,7 +387,10 @@ export const SharedExpensesView: React.FC<SharedExpensesViewProps> = ({
               <div className="p-8 text-center text-slate-400 text-xs">
                 Ingen registrerede fællesudgifter endnu.
               </div>
-            ) : (
+            ) : 
+
+            /*
+            (
               sharedTxList.map((tx) => {
                 const count = tx.split_between_count || 1;
                 const myShare = tx.amount / count;
@@ -453,7 +463,64 @@ export const SharedExpensesView: React.FC<SharedExpensesViewProps> = ({
                   </div>
                 );
               })
-            )}
+            ) 
+            */
+           (
+            sharedTxList.map((tx) => {
+              const participantsList = tx.participants || [];
+              const perPerson = tx.amount / (participantsList.length || 1);
+              
+              // Hvor mange har betalt?
+              const paidCount = participantsList.filter(p => p.paid).length;
+              const allPaid = paidCount === participantsList.length;
+
+              return (
+                <div key={tx.id} className="p-4 rounded-xl border bg-white border-slate-200 space-y-3">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h4 className="text-xs font-semibold text-slate-900">{tx.title}</h4>
+                      <span className="text-[11px] text-slate-500">{tx.date} · Samlet: {formatCurrency(tx.amount)}</span>
+                    </div>
+                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-md ${allPaid ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
+                      {paidCount} af {participantsList.length} afregnet
+                    </span>
+                  </div>
+
+                  {/* Liste over deltagere og deres betalingsstatus */}
+                  <div className="space-y-1.5 pt-2 border-t border-slate-100">
+                    {participantsList.map((p) => (
+                      <div key={p.id} className="flex items-center justify-between text-xs py-1 px-2 bg-slate-50 rounded-lg">
+                        <span className="font-medium text-slate-700">{p.name} ({formatCurrency(perPerson)})</span>
+                        
+                        {p.name === 'Mig' ? (
+                          <span className="text-[10px] text-slate-400 italic">Udlægger</span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              // Her kalder du en funktion der vender p.paid for netop denne person
+                              // f.eks. onToggleParticipant(tx.id, p.id)
+                            }}
+                            className={`text-[10px] font-semibold px-2 py-1 rounded transition-colors ${
+                              p.paid 
+                                ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200' 
+                                : 'bg-amber-100 text-amber-800 hover:bg-amber-200'
+                            }`}
+                          >
+                            {p.paid ? 'Afregnet ✓' : 'Marker som betalt'}
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            }
+
+          )
+        )
+            
+            }
           </div>
         </div>
       </div>
